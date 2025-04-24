@@ -3,3 +3,4 @@ torch
 pandas
 numpy 
 opencv-python
+flask

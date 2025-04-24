@@ -11,12 +11,16 @@ from mini_court import MiniCourt
 import cv2
 import pandas as pd
 from copy import deepcopy
+import os
 
 
-def main():
+def main(input_video_path: str, player_1_height: float, player_2_height: float):
+    # Ensure output directory exists
+    os.makedirs("output_videos", exist_ok=True)
+    
     # Read Video
-    input_video_path = "input_videos/input_video.mp4"
     video_frames = read_video(input_video_path)
+    print(input_video_path)
 
     # Detect Players and Ball
     player_tracker = PlayerTracker(model_path='yolov8x')
@@ -50,7 +54,9 @@ def main():
     # Convert positions to mini court positions
     player_mini_court_detections, ball_mini_court_detections = mini_court.convert_bounding_boxes_to_mini_court_coordinates(player_detections, 
                                                                                                           ball_detections,
-                                                                                                          court_keypoints)
+                                                                                                          court_keypoints,
+                                                                                                          player_1_height,
+                                                                                                          player_2_height)
 
     player_stats_data = [{
         'frame_num':0,
@@ -144,5 +150,4 @@ def main():
 
     save_video(output_video_frames, "output_videos/output_video.avi")
 
-if __name__ == "__main__":
-    main()
+    return player_stats_data_df.to_dict(orient='records')
