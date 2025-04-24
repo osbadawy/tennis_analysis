@@ -1,7 +1,4 @@
 
-# Tennis Analysis
-
-![Screenshot](output_videos/screenshot.jpeg)
 
 ## Models Used
 * YOLO v8 for player detection
