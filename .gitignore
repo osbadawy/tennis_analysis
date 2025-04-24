@@ -1,2 +1,9 @@
 /models/*
 */__pycache__/*
+*.pt
+*.pth
+*.pt.gz
+*.pt.tar.gz
+*.pt.tar.xz
+*.pt.tar.bz2
+*.pt.tar.wim
