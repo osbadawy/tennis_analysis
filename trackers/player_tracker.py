@@ -27,8 +27,6 @@ class PlayerTracker:
         Returns:
             list[dict[int, list[float]]]: List of filtered player detections where track_ids are mapped to player numbers (1 or 2)
         """
-        if not player_detections:
-            return []
             
         player_detections_first_frame = player_detections[0]
         chosen_players = self.choose_players(court_keypoints, player_detections_first_frame)

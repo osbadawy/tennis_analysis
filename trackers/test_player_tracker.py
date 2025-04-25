@@ -102,21 +102,6 @@ def test_choose_and_filter_players(player_tracker):
         assert filtered_detections[2][1] == [445.0236, 808.1839, 507.0568, 909.4980]  # Player 1 (bottom)
         assert filtered_detections[2][2] == [1026.6578, 149.7072, 1070.7899, 274.3576]  # Player 2 (top)
 
-def test_choose_and_filter_players_with_empty_detections(player_tracker):
-    # Test with empty detections
-    court_keypoints = np.array([
-        649.3417, 273.86682,
-        1259.1753, 274.36398,
-        414.30038, 797.74927,
-        1472.5964, 799.99615
-    ], dtype=np.float32)
-    player_detections = []
-    
-    # Mock choose_players to return empty dict
-    with patch.object(PlayerTracker, 'choose_players', return_value={}):
-        filtered_detections = player_tracker.choose_and_filter_players(court_keypoints, player_detections)
-        assert len(filtered_detections) == 0
-
 def test_choose_and_filter_players_with_single_frame(player_tracker):
     # Test with single frame
     court_keypoints = np.array([

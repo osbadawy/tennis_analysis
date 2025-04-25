@@ -1,10 +1,10 @@
-name: Python Tests
+name: Run Pytest Tests
 
 on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [ '*' ]
 
 jobs:
   test:
@@ -30,4 +30,4 @@ jobs:
     
     - name: Run tests
       run: |
-        pytest trackers/test_player_tracker.py -v 
+        pytest . -v 
