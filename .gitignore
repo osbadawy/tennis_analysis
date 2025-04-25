@@ -7,3 +7,5 @@
 *.pt.tar.xz
 *.pt.tar.bz2
 *.pt.tar.wim
+
+tracker_stubs/*
