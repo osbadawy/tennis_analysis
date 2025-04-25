@@ -11,16 +11,24 @@ from mini_court import MiniCourt
 import cv2
 import pandas as pd
 from copy import deepcopy
+import os
+import torch
 
 
-def main():
+def main(input_video_path: str, player_1_height: float, player_2_height: float):
+    # Ensure output directory exists
+    os.makedirs("output_videos", exist_ok=True)
+    
     # Read Video
-    input_video_path = "input_videos/input_video.mp4"
     video_frames = read_video(input_video_path)
+    print(input_video_path)
+
+    # Set device for all models
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     # Detect Players and Ball
-    player_tracker = PlayerTracker(model_path='yolov8x')
-    ball_tracker = BallTracker(model_path='models/yolo5_last.pt')
+    player_tracker = PlayerTracker(model_path='yolov8x', device=device)
+    ball_tracker = BallTracker(model_path='models/yolo5_last.pt', device=device)
 
     player_detections = player_tracker.detect_frames(video_frames,
                                                      read_from_stub=True,
@@ -35,7 +43,7 @@ def main():
     
     # Court Line Detector model
     court_model_path = "models/keypoints_model.pth"
-    court_line_detector = CourtLineDetector(court_model_path)
+    court_line_detector = CourtLineDetector(court_model_path, device=device)
     court_keypoints = court_line_detector.predict(video_frames[0])
 
     # choose players
@@ -50,7 +58,9 @@ def main():
     # Convert positions to mini court positions
     player_mini_court_detections, ball_mini_court_detections = mini_court.convert_bounding_boxes_to_mini_court_coordinates(player_detections, 
                                                                                                           ball_detections,
-                                                                                                          court_keypoints)
+                                                                                                          court_keypoints,
+                                                                                                          player_1_height,
+                                                                                                          player_2_height)
 
     player_stats_data = [{
         'frame_num':0,
@@ -144,5 +154,4 @@ def main():
 
     save_video(output_video_frames, "output_videos/output_video.avi")
 
-if __name__ == "__main__":
-    main()
+    return player_stats_data_df.to_dict(orient='records')
