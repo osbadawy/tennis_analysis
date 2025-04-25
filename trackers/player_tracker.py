@@ -2,14 +2,34 @@ from ultralytics import YOLO
 import cv2
 import pickle
 import sys
+import torch
+import numpy as np
 sys.path.append('../')
 from utils import measure_distance, get_center_of_bbox
 
 class PlayerTracker:
-    def __init__(self,model_path):
+    def __init__(self,model_path, device):
         self.model = YOLO(model_path)
+        # Set device to CUDA if available
+        self.device = device
 
-    def choose_and_filter_players(self, court_keypoints, player_detections):
+        self.model.to(self.device)
+
+    def choose_and_filter_players(self, court_keypoints: np.ndarray, player_detections: list[dict[int, list[float]]]) -> list[dict[int, list[float]]]:
+        """
+        Choose and filter players from multiple frames of detections.
+        
+        Args:
+            court_keypoints (np.ndarray): Array of court keypoint coordinates in format [x1, y1, x2, y2, ...]
+            player_detections (list[dict[int, list[float]]]): List of dictionaries containing player detections for each frame.
+                Each dictionary maps track_id to bounding box [x1, y1, x2, y2]
+        
+        Returns:
+            list[dict[int, list[float]]]: List of filtered player detections where track_ids are mapped to player numbers (1 or 2)
+        """
+        if not player_detections:
+            return []
+            
         player_detections_first_frame = player_detections[0]
         chosen_players = self.choose_players(court_keypoints, player_detections_first_frame)
         filtered_player_detections = []
@@ -24,15 +44,28 @@ class PlayerTracker:
             filtered_player_detections.append(filtered_player_dict)
         return filtered_player_detections
 
-    def choose_players(self, court_keypoints, player_dict):
+    def choose_players(self, court_keypoints: np.ndarray, player_dict: dict[int, list[float]]) -> dict[int, int]:
+        """
+        Choose which detected players correspond to player 1 and player 2 based on their positions relative to court keypoints.
+        
+        Args:
+            court_keypoints (np.ndarray): Array of court keypoint coordinates in format [x1, y1, x2, y2, ...]
+            player_dict (dict[int, list[float]]): Dictionary mapping track_id to bounding box [x1, y1, x2, y2]
+        
+        Returns:
+            dict[int, int]: Dictionary mapping original track_id to player number (1 or 2)
+        """
         # Define the keypoint groups for each player
-        player1_keypoints = [0, 4, 7, 1]
-        player2_keypoints = [2, 5, 6, 3]
+        player1_keypoints = [5, 7]
+        player2_keypoints = [4, 6]
         
         # Initialize distances for both players
         player1_distances = []
         player2_distances = []
         
+        if not player_dict:
+            return {}
+            
         for track_id, bbox in player_dict.items():
             player_center = get_center_of_bbox(bbox)
             

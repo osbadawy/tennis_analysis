@@ -12,6 +12,7 @@ import cv2
 import pandas as pd
 from copy import deepcopy
 import os
+import torch
 
 
 def main(input_video_path: str, player_1_height: float, player_2_height: float):
@@ -22,9 +23,12 @@ def main(input_video_path: str, player_1_height: float, player_2_height: float):
     video_frames = read_video(input_video_path)
     print(input_video_path)
 
+    # Set device for all models
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
     # Detect Players and Ball
-    player_tracker = PlayerTracker(model_path='yolov8x')
-    ball_tracker = BallTracker(model_path='models/yolo5_last.pt')
+    player_tracker = PlayerTracker(model_path='yolov8x', device=device)
+    ball_tracker = BallTracker(model_path='models/yolo5_last.pt', device=device)
 
     player_detections = player_tracker.detect_frames(video_frames,
                                                      read_from_stub=True,
@@ -39,7 +43,7 @@ def main(input_video_path: str, player_1_height: float, player_2_height: float):
     
     # Court Line Detector model
     court_model_path = "models/keypoints_model.pth"
-    court_line_detector = CourtLineDetector(court_model_path)
+    court_line_detector = CourtLineDetector(court_model_path, device=device)
     court_keypoints = court_line_detector.predict(video_frames[0])
 
     # choose players

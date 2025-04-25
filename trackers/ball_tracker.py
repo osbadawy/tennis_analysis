@@ -2,10 +2,14 @@ from ultralytics import YOLO
 import cv2
 import pickle
 import pandas as pd
+import torch
 
 class BallTracker:
-    def __init__(self,model_path):
+    def __init__(self,model_path, device):
         self.model = YOLO(model_path)
+        # Set device to CUDA if available
+        self.device = device
+        self.model.to(self.device)
 
     def interpolate_ball_positions(self, ball_positions):
         ball_positions = [x.get(1,[]) for x in ball_positions]

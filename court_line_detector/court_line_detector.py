@@ -5,10 +5,13 @@ from torchvision import models
 import numpy as np
 
 class CourtLineDetector:
-    def __init__(self, model_path):
+    def __init__(self, model_path, device):
+        self.device = device
         self.model = models.resnet50(pretrained=True)
         self.model.fc = torch.nn.Linear(self.model.fc.in_features, 14*2) 
-        self.model.load_state_dict(torch.load(model_path, map_location='cpu'))
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        self.model = self.model.to(self.device)
+        self.model.eval()
         self.transform = transforms.Compose([
             transforms.ToPILImage(),
             transforms.Resize((224, 224)),
@@ -17,10 +20,8 @@ class CourtLineDetector:
         ])
 
     def predict(self, image):
-
-    
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        image_tensor = self.transform(image_rgb).unsqueeze(0)
+        image_tensor = self.transform(image_rgb).unsqueeze(0).to(self.device)
         with torch.no_grad():
             outputs = self.model(image_tensor)
         keypoints = outputs.squeeze().cpu().numpy()
